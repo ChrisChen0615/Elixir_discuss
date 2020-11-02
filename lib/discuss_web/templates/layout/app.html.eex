@@ -9,15 +9,17 @@
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
     <%# material css %>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <%# google icon %>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   </head>
   <body>
     <nav class="light-blue">
-          <div class="nav-wrapper container">
-            <a href="/" class="brand-logo">
-              Discussions
-            </a>
-          </div>
-        </nav>
+      <div class="nav-wrapper container">
+        <a href="/" class="brand-logo">
+          Discussions
+        </a>
+      </div>
+    </nav>
     <main role="main" class="container">
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
