@@ -13,7 +13,7 @@ defmodule Discuss.User do
   # \\代表default?
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:title, :provider, :token])
-    |> validate_required([:title, :provider, :token])
+    |> cast(params, [:email, :provider, :token])
+    |> validate_required([:email, :provider, :token])
   end
 end
