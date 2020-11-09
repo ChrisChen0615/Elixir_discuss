@@ -13,6 +13,13 @@ defmodule DiscussWeb.AuthController do
     signin(conn, changeset)
   end
 
+  def signout(conn, _params) do
+    conn
+    # 移除所有session
+    |> configure_session(drop: true)
+    |> redirect(to: Routes.topic_path(conn, :index))
+  end
+
   # defp p => private, only for this controller
   defp signin(conn, changeset) do
     case insert_or_update_user(changeset) do
