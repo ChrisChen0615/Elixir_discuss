@@ -6,6 +6,10 @@ defmodule DiscussWeb.TopicController do
   alias Discuss.Repo
   alias DiscussWeb.Router.Helpers, as: Routes
 
+  # 觸發使用plug的方法名稱
+  plug DiscussWeb.Plugs.RequireAuth when action in [:new, :create, :edit, :update, :delete]
+  plug :check_topic_owner when action in [:update, :edit, :delete]
+
   def index(conn, _params) do
     # Ecto 處理Repository的lib
     topics = Repo.all(Topic)
@@ -20,7 +24,13 @@ defmodule DiscussWeb.TopicController do
   end
 
   def create(conn, %{"topic" => topic}) do
-    changeset = Topic.changeset(%Topic{}, topic)
+    # conn.assigns[:user]
+    # conn.assigns.user
+    # 此兩行同意思
+    changeset =
+      conn.assigns.user
+      |> Ecto.build_assoc(:topics)
+      |> Topic.changeset(topic)
 
     case Repo.insert(changeset) do
       {:ok, _post} ->
@@ -63,5 +73,28 @@ defmodule DiscussWeb.TopicController do
     conn
     |> put_flash(:info, "Topic Deleted")
     |> redirect(to: Routes.topic_path(conn, :index))
+  end
+
+  # def check_topic_owner(conn, _params) do
+  #   %{params: %{"id" => topic_id}} = conn
+
+  #   if Repo.get(Topic, topic_id).user_id == conn.assigns.user.id do
+  #     conn
+  #   else
+  #     conn
+  #     |> put_flash(:error, "你不能編輯此筆資料!")
+  #     |> redirect(to: Routes.topic_path(conn, :index))
+  #     |> halt()
+  #   end
+  # end
+  def check_topic_owner(%{params: %{"id" => topic_id}, assigns: %{user: %{id: user_id}}} = conn, _params) do
+    cond do
+      Repo.get(Topic, topic_id).user_id == user_id -> conn
+      true ->
+        conn
+        |> put_flash(:error, "你不能編輯此筆資料!")
+        |> redirect(to: Routes.topic_path(conn, :index))
+        |> halt()
+    end
   end
 end
