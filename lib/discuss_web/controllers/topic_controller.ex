@@ -7,9 +7,19 @@ defmodule DiscussWeb.TopicController do
   alias DiscussWeb.Router.Helpers, as: Routes
 
   # 觸發使用plug的方法名稱
-  plug DiscussWeb.Plugs.RequireAuth when action in [:new, :create, :edit, :update, :delete]
-  plug :check_topic_owner when action in [:update, :edit, :delete]
+  plug DiscussWeb.Plugs.RequireAuth when action in [:new, :create, :edit, :update, :show]
+  # funcion plug
+  plug :check_topic_owner when action in [:update, :edit, :show]
 
+  def show(conn, %{"id" => topic_id}) do
+    topic = Repo.get!(Topic, topic_id)
+
+    render(conn, "show.html", topic: topic)
+  end
+
+  @doc """
+  default action
+  """
   def index(conn, _params) do
     # Ecto 處理Repository的lib
     topics = Repo.all(Topic)
@@ -17,12 +27,18 @@ defmodule DiscussWeb.TopicController do
     render(conn, "index.html", topics: topics)
   end
 
+  @doc """
+  新增頁 action
+  """
   def new(conn, _params) do
     changeset = Topic.changeset(%Topic{}, %{})
 
     render(conn, "new.html", changeset: changeset)
   end
 
+  @doc """
+  新增 action
+  """
   def create(conn, %{"topic" => topic}) do
     # conn.assigns[:user]
     # conn.assigns.user
@@ -43,6 +59,9 @@ defmodule DiscussWeb.TopicController do
     end
   end
 
+  @doc """
+  編輯頁 action
+  """
   @spec edit(Plug.Conn.t(), map) :: Plug.Conn.t()
   def edit(conn, %{"id" => topic_id}) do
     topic = Repo.get(Topic, topic_id)
@@ -51,6 +70,9 @@ defmodule DiscussWeb.TopicController do
     render(conn, "edit.html", changeset: changeset, topic: topic)
   end
 
+  @doc """
+  編輯 action
+  """
   def update(conn, %{"id" => topic_id, "topic" => topic}) do
     old_topic = Repo.get(Topic, topic_id)
     changeset = Topic.changeset(old_topic, topic)
@@ -66,8 +88,10 @@ defmodule DiscussWeb.TopicController do
     end
   end
 
-  # 原先方法名稱為"delete"，但執行會失敗，改"show"可成功執行刪除
-  def show(conn, %{"id" => topic_id}) do
+  @doc """
+  刪除 action, 原先方法名稱為"delete"，但執行會失敗，改"show"可成功執行刪除
+  """
+  def delete(conn, %{"id" => topic_id}) do
     Repo.get!(Topic, topic_id) |> Repo.delete!()
 
     conn
@@ -87,9 +111,14 @@ defmodule DiscussWeb.TopicController do
   #     |> halt()
   #   end
   # end
-  def check_topic_owner(%{params: %{"id" => topic_id}, assigns: %{user: %{id: user_id}}} = conn, _params) do
+  def check_topic_owner(
+        %{params: %{"id" => topic_id}, assigns: %{user: %{id: user_id}}} = conn,
+        _params
+      ) do
     cond do
-      Repo.get(Topic, topic_id).user_id == user_id -> conn
+      Repo.get(Topic, topic_id).user_id == user_id ->
+        conn
+
       true ->
         conn
         |> put_flash(:error, "你不能編輯此筆資料!")
