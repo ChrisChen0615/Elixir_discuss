@@ -1,7 +1,9 @@
 <h5>Comments:<%= @topic.title %></h5>
 <div class="input-field">
-<textarea class="materialize-textarea"></textarea>
-<button class="btn">新增評論</button>
+  <textarea class="materialize-textarea"></textarea>
+  <button class="btn">新增評論</button>
+  <ol id="myol" class="collection">
+  </ol>
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", () =>{

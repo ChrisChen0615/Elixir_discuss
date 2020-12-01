@@ -6,9 +6,15 @@
 //
 // Pass the token on params as below. Or remove it
 // from the params if you are not using authentication.
-import {Socket} from "phoenix"
+import {
+  Socket
+} from "phoenix"
 
-let socket = new Socket("/socket", {params: {token: window.userToken}})
+let socket = new Socket("/socket", {
+  params: {
+    token: window.userToken
+  }
+})
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -55,17 +61,54 @@ let socket = new Socket("/socket", {params: {token: window.userToken}})
 socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-const createSocket = (topicId) =>{
+const createSocket = (topicId) => {
   let channel = socket.channel(`comments:${topicId}`, {})
   channel.join()
-    .receive("ok", resp => { console.log("加入channel成功", resp) })
-    .receive("error", resp => { console.log("未能加入channel", resp) })
-
-    document.querySelector('button').addEventListener('click', () =>{
-      const content = document.querySelector('textarea').value;
-
-      channel.push('comment:add', { content: content});
+    .receive("ok", resp => {
+      renderComments(resp.comments);
     })
+    .receive("error", resp => {
+      console.log("未能加入channel", resp)
+    })
+
+  //新增監聽事件
+  channel.on(`comments:${topicId}:new`, renderComment);
+
+  document.querySelector('button').addEventListener('click', () => {
+    const content = document.querySelector('textarea').value;
+
+    channel.push('comment:add', {
+      content: content
+    });
+  })
+}
+
+function renderComments(comments) {
+  const renderComments = comments.map(comment => {
+    return commentTemplate(comment);
+  });
+
+  document.getElementById('myol').innerHTML = renderComments.join('');
+}
+
+function renderComment(event) {
+  const template = commentTemplate(event.comment);
+  document.getElementById('myol').innerHTML += template;
+}
+
+function commentTemplate(comment) {
+  let email = "Anonymous";
+  if (comment.user) {
+    email = comment.user.email;
+  }
+  return `
+  <li class="collection-item">
+    ${comment.content}
+    <div class="secondary-content">
+    ${email}
+    </div>
+  </il>
+`;
 }
 
 window.createSocket = createSocket;
