@@ -1,1 +1,10 @@
-<%= @topic.title %>
+<h5>Comments:<%= @topic.title %></h5>
+<div class="input-field">
+<textarea class="materialize-textarea"></textarea>
+<button class="btn">新增評論</button>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () =>{
+    window.createSocket(<%= @topic.id %>)
+  })
+</script>
